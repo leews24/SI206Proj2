@@ -21,7 +21,7 @@ import re
 ## Write code to define your parse_counted_words function here.
 
 def parse_counted_words(x):
-    x = re.findall(r"(\d+) (.\w[a-z]+)",x)
+    x = re.findall(r"(\d+)\s(.\w[a-zA-Z]+)",x)
     if len(x) != 0:
         return x[-1]
     else:
@@ -37,15 +37,30 @@ def parse_counted_words(x):
 x = open("computer_paths.txt", "r")
 file_paths_num = 0
 for line in x:
-    if re.search("[.]",line):
+    line = line.rstrip()
+    if re.findall(r"[.]",line):
         file_paths_num += 1
-# file_paths_num = re.findall
+
 ## (b) Write Python code to determine how many of these paths are FULL paths, not relative paths. Save that number in the variable full_paths_num.
+x = open("computer_paths.txt", "r")
+full_paths_num = 0
+for line in x:
+    line = line.rstrip()
+    if re.findall(r"\A[/~]", line):
+        full_paths_num += 1
 
 ## (c) Write Python code to determine how many of these paths describe a Python file saved inside a folder called SI206. Save that number in the variable python_course_paths.
-
+x = open("computer_paths.txt", "r")
+python_course_paths = 0
+for line in x:
+    line = line.rstrip()
+    if re.findall(r"(?<=SI206)", line):
+        if re.findall(r"\w+.py", line):
+            print(line)
+            python_course_paths += 1
+            
 ## (d) Write Python code to determine how many of these paths describe a Microsoft file (a file that EITHER ends with .docx OR .xlsx, but nothing else counts) where the file name ends in a digit. Save that total in the variable microsoft_files_num.
-
+x = open("computer_paths.txt", "r")
 
 
 
@@ -77,10 +92,10 @@ class Part1_HW3(unittest.TestCase):
 class Part2_HW3(unittest.TestCase):
     def test_cpaths_1(self):
         self.assertEqual(file_paths_num,16)
-    # def test_cpaths_2(self):
-    #     self.assertEqual(full_paths_num,16)
-    # def test_cpaths_3(self):
-    #     self.assertEqual(python_course_paths,3)
+    def test_cpaths_2(self):
+        self.assertEqual(full_paths_num,16)
+    def test_cpaths_3(self):
+        self.assertEqual(python_course_paths,3)
     # def test_cpaths_4(self):
     #     self.assertEqual(microsoft_files_num,3)
 
