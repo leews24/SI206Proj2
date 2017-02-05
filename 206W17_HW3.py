@@ -3,8 +3,8 @@ import re
 
 ## SI 206 - W17 - HW3
 ## COMMENT WITH:
-## Your section day/time:
-## Any names of people you worked with on this assignment:
+## Your section day/time: 002 Thur 3PM
+## Any names of people you worked with on this assignment: N/A
 
 #####################
 
@@ -48,6 +48,7 @@ for line in x:
     line = line.rstrip()
     if re.findall(r"\A[/~]", line):
         full_paths_num += 1
+print(full_paths_num)
 
 ## (c) Write Python code to determine how many of these paths describe a Python file saved inside a folder called SI206. Save that number in the variable python_course_paths.
 x = open("computer_paths.txt", "r")
@@ -56,13 +57,15 @@ for line in x:
     line = line.rstrip()
     if re.findall(r"(?<=SI206)", line):
         if re.findall(r"\w+.py", line):
-            print(line)
             python_course_paths += 1
-            
+
 ## (d) Write Python code to determine how many of these paths describe a Microsoft file (a file that EITHER ends with .docx OR .xlsx, but nothing else counts) where the file name ends in a digit. Save that total in the variable microsoft_files_num.
 x = open("computer_paths.txt", "r")
-
-
+microsoft_files_num = 0
+for line in x:
+    line = line.rstrip()
+    if re.findall(r"\d+.docx\Z", line) or re.findall(r"\d+.xlsx\Z", line):
+        microsoft_files_num +=1
 
 
 
@@ -96,8 +99,8 @@ class Part2_HW3(unittest.TestCase):
         self.assertEqual(full_paths_num,16)
     def test_cpaths_3(self):
         self.assertEqual(python_course_paths,3)
-    # def test_cpaths_4(self):
-    #     self.assertEqual(microsoft_files_num,3)
+    def test_cpaths_4(self):
+        self.assertEqual(microsoft_files_num,3)
 
 
 if __name__ == "__main__":
