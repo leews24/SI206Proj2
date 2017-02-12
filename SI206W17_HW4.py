@@ -1,7 +1,7 @@
 import unittest
 import requests
 from bs4 import BeautifulSoup
-
+import codecs
 
 ## SI 206 - W17 - HW4
 ## COMMENT WITH:
@@ -16,13 +16,30 @@ from bs4 import BeautifulSoup
 
 base_url = 'http://www.nytimes.com'
 r = requests.get(base_url)
-nytfile = open("nytimes_data.html", "w", encoding = "UTF-8")
+nytfile = codecs.open("nytimes_data.html", "w", encoding = "UTF-8")
 nytfile.write(r.text)
 
 #####################
 
 ## PART 2 (200 points)
 ## Write code to get the first 10 headlines from the New York Times, based on the data you saved in the file in Part 1, and save those strings in a list called nytimes_headlines. 
+r.encoding = "utf-8"
+soup = BeautifulSoup(r.text, "html.parser")
+
+nytimes_headlines_full = []
+nytimes_headlines = []
+while len(nytimes_headlines_full) < 11:
+	for story_heading in soup.find_all(class_="story-heading"): 
+	    if story_heading.a: 
+	        nytimes_headlines_full.append(story_heading.a.text.replace("\n", " ").strip())
+	    else: 
+	        nytimes_headlines_full.append(story_heading.contents[0].strip())
+index = 0
+while index < 10:
+	nytimes_headlines.append(str(nytimes_headlines_full[index].encode("utf-8")))
+	index +=1
+
+
 
 ## Note that you will almost certainly need to do some investigation on the http://nytimes.com website to do this correctly, even after saving the file in Part 1.
 
@@ -68,7 +85,8 @@ response = requests.get("https://www.si.umich.edu/directory?field_person_firstna
 htmldoc = response.text
 
 soup = BeautifulSoup(htmldoc,"html.parser")
-people = soup.find_all("div",{"class":"views-row"})
+people = soup.find_all("div",{"class":"views-row"},"h2")
+print(people)
 umsi_titles = {}
 
 ## It may be helpful to translate the following from English to code:
@@ -94,7 +112,7 @@ class HW4_Part2(unittest.TestCase):
 	def test_first_last_elem(self):
 		self.assertEqual(type(nytimes_headlines[0]),type(""), "Testing that the first type in the nytimes_headlines list is a string")
 		self.assertEqual(type(nytimes_headlines[-1]),type(""), "Testing that the last type in the nytimes_headlines list is a string")
-	def length_of_ten(self):
+	def test_length_of_ten(self):
 		self.assertEqual(len(nytimes_headlines),10, "Testing that there are ten headlines in the list")
 
 class HW4_Part3(unittest.TestCase):
