@@ -82,7 +82,11 @@ def cache_twitter(searchword):
 x1 = input("Please type in a search query. \n")
 x2 = cache_twitter(x1)
 
-
+i=0
+while i < 3:
+    print("TEXT: " + x2[i]["text"])
+    print("CREATED AT: " + x2[i]["created_at"] + "\n\n\n")
+    i += 1
 
 
 #### Recommended order of tasks: ####
