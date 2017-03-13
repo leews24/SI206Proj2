@@ -1,0 +1,19 @@
+1.
+In scraping the data through the get_umsi_function, I ran into trouble when some of the titles/positions included an "&".
+In my cache, all instances of "&" are written as "&amp;".
+I had to write additional code (128-134) in order to change every instance of "&amp;" to "&".
+
+On a side note, I have defined the file encoding in line 34. 
+
+
+2.
+I was having trouble having 5 tweets return when I searched McGill University. 
+This is because for my twitter account, THERE WERE NO 5 RESULTS FOR THE SEARCH, "McGill University."
+When another tweet including the term "McGill University" was tweeted, my search results increased by 1 to include the tweet.
+
+I have coded the project to so that the function get_five_tweets returns less than 5 tweets if 5 tweets for the searh term does not exist.
+For instance, if 3 tweets are the result, the function returns 3 functions.
+
+
+
+Thank you.

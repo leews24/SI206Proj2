@@ -31,7 +31,7 @@ auth.set_access_token(access_token, access_token_secret)
 
 # Set up to be able grab stuff from twitter with your authentication using Tweepy methods, and return it in a JSON format 
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
-
+sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
 ## Part 0 -- CACHING SETUP
 
 ## Write the code to begin your caching pattern setup here.
@@ -56,7 +56,6 @@ def twittercache(searchword):
         CACHE_DICTION[identifier] = results
         f = codecs.open(cachefile_directory,'w')
         f.write(json.dumps(CACHE_DICTION))
-    return CACHE_DICTION[identifier]["statuses"]
 twittercache("University of Michigan")
 
 ## PART 1 - Define a function find_urls.
@@ -88,7 +87,7 @@ def get_umsi_data():
         print("Using cached UMSI directory data.\n---------------------")
     else:
         CACHE_DICTION["umsi_directory_data"] = []
-        print("Caching UMSI directory data.\n---------------------")
+        print("Getting UMSI directory data.\n---------------------")
         i = 0
         while i<12:
             if i == 0:
@@ -139,18 +138,45 @@ for name in umsi_titles:
 ## Behavior: See instructions. Should search for the input string on twitter and get results. Should check for cached data, use it if possible, and if not, cache the data retrieved.
 ## RETURN VALUE: A list of strings: A list of just the text of 5 different tweets that result from the search.
 
-
+def get_five_tweets(query):
+    templist = []
+    retlist = []
+    identifier = "twitter_" + query
+    if identifier in CACHE_DICTION:
+        print("Using cached data for the search term.\n---------------------")
+        results = CACHE_DICTION[identifier]
+    else:
+        print('Getting cached data for the search term.\n---------------------')
+        results = api.search(q=query, rpp = 15)
+        CACHE_DICTION[identifier] = results
+        f = codecs.open(cachefile_directory,'w')
+        f.write(json.dumps(CACHE_DICTION))
+    i = 0
+    if len(results["statuses"]) < 5:
+        print("ATTENTION :: TWEEPY SEARCH RETURNS LESS THAN 5 RESULTS. \nTHIS IS NOT A ERROR IN THE CODE, IT'S JUST THAT THERE AREN'T ENOUGH RESULTS.\nAGAIN, THIS IS NOT THE PROBLEM THAT THE PROGRAMMER MADE, BUT RATHER A SYSTEMATIC SHORTCOMING.\n")
+        for statuses in results["statuses"]:
+            retlist.append(statuses["text"])
+        return retlist
+    else:
+        i = 0
+        for statuses in results["statuses"]:
+            if i < 5:
+                retlist.append(statuses["text"])
+                i += 1
+        return retlist
 
 
 ## PART 3 (b) - Write one line of code to invoke the get_five_tweets function with the phrase "University of Michigan" and save the result in a variable five_tweets.
 
-
+five_tweets = get_five_tweets("University of Michigan")
 
 
 ## PART 3 (c) - Iterate over the five_tweets list, invoke the find_urls function that you defined in Part 1 on each element of the list, and accumulate a new list of each of the total URLs in all five of those tweets in a variable called tweet_urls_found. 
 
-
-
+tweet_urls_found = []
+for tweets in five_tweets:
+    for url in find_urls(tweets):
+        tweet_urls_found.append(url)
 
 
 ########### TESTS; DO NOT CHANGE ANY CODE BELOW THIS LINE! ###########
@@ -204,19 +230,19 @@ class PartTwo(unittest.TestCase):
 	def test_dict_values(self):
 		self.assertEqual(sorted(umsi_titles.values()),[' ', ' ', ' ', ' ', ' ', 'Academic Advisor', 'Academic Advisor', 'Academic Programs Coordinator', 'Accountant Senior', 'Adjunct Associate Professor of Information, School of Information', 'Adjunct Clinical Associate Professor of Information and iDream Program Manager, School of Information', 'Adjunct Professor of Business Economics and Public Policy, Stephen M Ross School of Business, Research Professor, Survey Research Center and ISR Center Director, Institute for Social Research', 'Administrative Assistant', 'Administrative Assistant Inter', 'Administrative Assistant Senior', 'Administrative Assistant and Events Coordinator', 'Administrative Director', 'Admissions Associate Dir Unit', 'Admissions and Student Affairs Assistant', 'Arthur F Thurnau Professor, Professor of Climate and Space Sciences and Engineering, College of Engineering and Professor of Information, School of Information', 'Arthur F Thurnau Professor, Professor of Education, School of Education and Professor of Information, School of Information', 'Arthur F Thurnau Professor, Professor of Electrical Engineering and Computer Science, College of Engr, Professor of Education, School of Education and Professor of Information, School of Information', 'Arthur F Thurnau Professor, Vice Provost for Academic Innovation, Office of the Provost and Executive Vice President for Academic Affairs, Dean of Libraries, University Library, Professor of Information, School of Information and Faculty Associate, Resear', 'Assistant Dean for Diversity, Equity, and Inclusion, School of Information', 'Assistant Director of Human Resources and Support Services', 'Assistant Director of Recruiting and Admissions, School of Information and Intermittent Lecturer in Social Work, School of Social Work', 'Assistant Director, Health Informatics Program', 'Assistant Professor of Art and Design, Penny W Stamps School of Art and Design and Assistant Professor of Information, School of Information', 'Assistant Professor of Art and Design, Penny W Stamps School of Art and Design and Assistant Professor of Information, School of Information', 'Assistant Professor of Electrical Engineering and Computer Science, College of Engineering and Assistant Professor of Information, School of Information', 'Assistant Professor of Family Medicine, Medical School and Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information', 'Assistant Professor of Information, School of Information and Assistant Professor of Art and Design. Penny W Stamps School of Art and Design', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Electrical Engineering and Computer Science, College of Engineering', 'Assistant Professor of Information, School of Information and Assistant Professor of Health Behavior and Health Education, School of Public Health', 'Assistant Professor of Information, School of Information, Assistant Professor of Electrical Engineering and Computer Science, College of Engineering and Assistant Professor of Complex Systems, College of Literature, Science, and the Arts', 'Assistant Professor of Learning Health Sciences, Medical School and Assistant Professor of Information, School of Information', 'Assistant Professor of Social Work, School of Social Work and Assistant Professor of Information, School of Information', 'Associate Archivist and Assistant Director, Bentley Historical Library and Adjunct Lecturer in Information, School of Information', 'Associate Archivist, Bentley Historical Library and Assistant Director, Bentley Historical Library and Adjunct Lecturer in Information, School of Information', 'Associate Director UMSI Computing', 'Associate Director of Development & Alumni Relations', 'Associate Librarian, University of Michigan Library', 'Associate Professor Emerita of Information, School of Information', 'Associate Professor Emeritus of Information, School of Information', 'Associate Professor of  Pediatrics and Communicable Diseases, Medical School and Clinical Associate Professor of Information, School of Information', 'Associate Professor of Electrical Engineering and Computer Science, College of Engineering and Associate Professor of Information, School of Information', 'Associate Professor of Information, School of Information', 'Associate Professor of Information, School of Information', 'Associate Professor of Information, School of Information', 'Associate Professor of Information, School of Information', 'Associate Professor of Information, School of Information and Associate Professor of Economics, College of Literature, Science, and the Arts', 'Associate Professor of Information, School of Information and Associate Professor of Electrical Engineering and Computer Science, College of Engineering', 'Associate Professor of Information, School of Information and Associate Professor of Electrical Engineering and Computer Science, College of Engineering', 'Associate Professor of Information, School of Information and Associate Professor of Electrical Engineering and Computer Science, College of Engineering', 'Associate Professor of Information, School of Information and Associate Professor of Health Behavior and Health Education, School of Public Health', 'Associate Professor of Information, School of Information and Associate Professor of Health Management and Policy, School of Public Health', 'Associate Professor of Music, School of Music, Theatre & Dance and Associate Professor of Information, School of Information', 'Business Systems Analyst Assoc', 'Career Development & Engaged Learning Coordinator', 'Career Services Counselor and Internship Coordinator and Adjunct Lecturer in Information, School of Information', 'Chief Information Officer and Clinical Assistant Professor of Information, School of Information', 'Citizen Experience Design Community Development Liaison and Adjunct Lecturer in Information, School of Information', 'Clinical Associate Professor of  Information, School of Information', 'Clinical Associate Professor of Information, School of Information', 'Clinical Associate Professor of Information, School of Information', 'Communications Specialist', 'Community Engagement & Exchange Coordinator', 'Dean Emeritus, Arthur W Burks Collegiate Professor Emeritus of Information and Computer Science, Professor Emeritus of Information, School of Information, Professor Emeritus of Economics, College of Literature, Science, and the Arts and Professor Emeritus', 'Dean and Professor of Information, School of Information', 'Director Admissions and Student Affairs', 'Director of Career Development', 'Director of Development and Alumni Relations', 'Director of Development, Bentley Historical Library', 'Director of Engaged Learning Programs', 'Director of Finance', 'Director of Human Resources and Support Services', 'Director of Marketing and Communications', 'Director of Research Administration', 'Ehrenberg Director of Entrepreneurship, Adjunct Clinical Associate Professor of Information and Research Investigator, School of Information', 'Employer Relations Coordinator', 'Engagement Manager', 'Events Manager', 'Facilities Coordinator', 'Financial Specialist Senior', 'George Herbert Mead Collegiate Professor of Human-Computer Interaction, Professor of Information, School of Information and Professor of Electrical Engineering and Computer Science, College of Engineering', 'Graduate Programs Coordinator', 'Graphic Designer', 'HR Generalist Intermediate', 'Harold T Shapiro Collegiate Professor of Public Policy, Arthur F Thurnau Professor, Interim Provost and Executive Vice President for Academic Affairs, Office of the Provost  and Executive Vice President for Academic Affairs, Presidential Bicentennial Prof', 'Intermittent Lecturer I in Information, School of Information', 'Intermittent Lecturer in Information, School of Information', 'Intermittent Lecturer in Information, School of Information', 'Intermittent Lecturer in Information, School of Information', 'John F Nickoll Professor of Law, Professor of Law, Law School and Professor of Information, School of Information', 'Josiah Macy, Jr Professor of Medical Education, Chair, Department of Learning Health Sciences, Professor of Learning Health Sciences, Medical School, Professor of Information, School of Information and Professor of Health Management and Policy, School of ', 'Large-Scale Research Program Manager', 'Lead Developer, Digital Innovation Greenhouse and Adjunct Lecturer in Information, School of Information', 'Lecturer III in Information, School of Information', 'Lecturer III in Information, School of Information', 'Lecturer III in Information, School of Information and Intermittent Lecturer in Residential College, College of Literature, Science, and the Arts', 'Lecturer IV in Information and Research Investigator, School of Information', 'Lecturer IV in Information, School of Information', 'Librarian, Library Budget and Planning - Copyright, University Library', 'Librarian, Library Collection, University Library and Adjunct Lecturer in Information, School of Information', 'MHI Recruitment and Admissions Coordinator', 'Marketing Assistant Associate', 'Marketing Project Manager', 'Michael D Cohen Collegiate Professor of Information, Associate Dean for Research and Faculty Affairs, Professor of Information and Interim Director of Health Informatics, School of Information', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'PhD student', 'President Emeritus and University Professor of Science and Engineering', 'Professor Emerita of Information, School of Information', 'Professor Emerita of Information, School of Information', 'Professor Emerita of Information, School of Information, Professor Emerita of Computation and Information Systems, Stephen M Ross School of Business and Professor Emerita of Psychology, College of Literature, Science, and the Arts', 'Professor Emeritus of Information, School of Information', 'Professor Emeritus of Information, School of Information', 'Professor Emeritus of Information, School of Information and Professor Emeritus of Electrical Engineering and Computer Science, College of Engineering', 'Professor Emeritus of Information, School of Information and Professor Emeritus of Psychology, College of Literature, Science, and the Arts', 'Professor of Dentistry, Department of Periodontics and Oral Medicine, Associate Dean for Faculty Affairs and Institutional Effectiveness, School of Dentistry and Clinical Professor of Information, School of Information', 'Professor of Information, School of Information', 'Professor of Information, School of Information', 'Professor of Information, School of Information', 'Professor of Information, School of Information and Professor of History, College of Literature, Science, and the Arts', 'Professor of Information, School of Information and Professor of History, College of Literature, Science, and the Arts', 'Professor of Information, School of Information, Faculty Associate, Center for Political Studies, Institute for Social Research and Professor of Communication Studies, College of Literature, Science, and the Arts', 'Professor of Information, School of Information, Professor of Electrical Engineering and Computer Science, College of Engineering and Prof of Psychology, College of Literature, Science and the Arts', 'Professor of Information, School of Information, Professor of Electrical Engineering and Computer Science, College of Engineering and Professor of Linguistics, College of Literature, Science, and the Arts', 'Professor of Information, School of Information, Professor of Electrical Engineering and Computer Science, College of Engineering and Provost and Executive Vice President for Academic Affairs, Office of the Provost and Executive Vice President for Academi', 'Program Manager and Research Coordinator', 'Project Manager', 'Research Area Specialist , School of Information', 'Research Area Specialist Lead and Research Investigator, School of Information', 'Research Assistant Professor, School of Information', 'Research Fellow, Information, Research Investigator, Information and Lecturer III in Information, School of Information', 'Research Fellow, Information, School of Information', 'Research Fellow, Information, School of Information', 'Research Investigator, Information and Research Fellow, School of Information', 'Research Process Coordinator', 'Research Process Coordinator Senior', 'Research Process Manager', 'Research Professor, School of Information', 'Research and HR Administrative Assistant', 'Robert M Warner Collegiate Professor of Information, Professor of Information, School of Information and Faculty Associate, Institute for Social Research', 'School Registrar', 'School of Information Intern', 'Senior Assistant to the Dean', 'Senior Associate Dean for Academic Affairs and Professor of Information, School of Information', 'Senior Associate Librarian, Graduate Library, University Library and Intermittent Lecturer in Information, School of Information', 'Senior Associate Librarian, Learning and Teaching, University Library and Adjunct Lecturer in Curriculum Support, College of Literature, Science, and the Arts', 'Social Media Specialist', 'Solution Architect Lead and Adjunct Lecturer in Information, Sch of Information, Director of Infrastructure ActiveStep, App Programmer/Analyst Ld, Family Medicine, Medical School', 'Student Services Assistant', 'Systems Programmer Analyst', 'Systems Programmer/Analyst Lead', 'Undergraduate Program Manager', 'Unix and IT Security Administrator', 'Videographer', 'Visiting Associate Professor of Economics, College of Literature, Science, and the Arts and Adjunct Associate Professor of Information, School of Information', 'W K Kellogg Professor of Community Information, Associate Professor of Information, School of Information', 'Web Software Developer', 'William Warner Bishop Collegiate Professor of Information and Professor of Information, School of Information'])
 
-# class PartThree(unittest.TestCase):
-# 	def test_get_tweets(self):
-# 		self.assertEqual(len(get_five_tweets("University of Michigan")),5,"Testing that get_five_tweets returns a sequence of 5 things")
-# 	def test_get_tweets_type(self):
-# 		self.assertEqual(type(get_five_tweets("McGill University")),type([]),"Testing that get_five_tweets returns a list")
-# 	def test_get_tweets_element_type(self):
-# 		self.assertEqual(type(get_five_tweets("University of Michigan")[1]),type(u""), "Testing that an element of the return val of get_tweets is a Unicode string")
-# 	def test_five_tweets(self):
-# 		self.assertEqual(type(five_tweets),type([]))
-# 	def test_five_tweets_len(self):
-# 		self.assertEqual(len(five_tweets),5)
-# 	def test_tweet_urls_found(self):
-# 		self.assertEqual(set([x[:4] for x in tweet_urls_found]),set(["http"]),"Testing that each element in tweet_urls_found list is a URL begin. with HTTP")
+class PartThree(unittest.TestCase):
+	def test_get_tweets(self):
+		self.assertEqual(len(get_five_tweets("University of Michigan")),5,"Testing that get_five_tweets returns a sequence of 5 things")
+	def test_get_tweets_type(self):
+		self.assertEqual(type(get_five_tweets("McGill University")),type([]),"Testing that get_five_tweets returns a list")
+	def test_get_tweets_element_type(self):
+		self.assertEqual(type(get_five_tweets("University of Michigan")[1]),type(u""), "Testing that an element of the return val of get_tweets is a Unicode string")
+	def test_five_tweets(self):
+		self.assertEqual(type(five_tweets),type([]))
+	def test_five_tweets_len(self):
+		self.assertEqual(len(five_tweets),5)
+	def test_tweet_urls_found(self):
+		self.assertEqual(set([x[:4] for x in tweet_urls_found]),set(["http"]),"Testing that each element in tweet_urls_found list is a URL begin. with HTTP")
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
